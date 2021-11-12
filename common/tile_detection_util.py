@@ -4,17 +4,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
+#print
+
 tiles_dict = {1:'1m', 2:'2m', 3:'3m', 4:'4m', 5:'5m', 6:'6m', 7:'7m', 8:'8m', 9:'9m', 10:'r5m',
                  11:'1p', 12:'2p', 13:'3p', 14:'4p', 15:'5p', 16:'6p', 17:'7p', 18:'8p', 19:'9p', 20:'r5p',
                  21:'1s', 22:'2s', 23:'3s', 24:'4s', 25:'5s', 26:'6s', 27:'7s', 28:'8s', 29:'9s', 30:'r5s',
                  31:'E', 32:'S', 33:'W', 34:'N', 35:'Wh', 36:'G', 37:'R'}
 
 def cvimshow(img):
-    if img.ndim==3:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        plt.imshow(img)
-    else:
-        plt.imshow(img, cmap='gray')
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    plt.imshow(img)
+    
 
 def get_template_list(dir_path='images/template/', temp_num_per_tile=1):
     """テンプレート画像読み込み
@@ -34,12 +34,14 @@ def get_template_list(dir_path='images/template/', temp_num_per_tile=1):
             template = cv2.imread(path)
             templates.append(template)
 
-    return templates
+    return templates #返戻値はテンプレ画像のリスト
 
 def remove_objects(img, lower_size=None, upper_size=None):
     """小領域を除去
     https://axa.biopapyrus.jp/ia/opencv/remove-objects.html
     """
+
+    # cv2.imwrite('./images/sample/before.png',img)     #オブジェクト除去前の画像を確認
     # find all objects
     nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img)
 
@@ -61,7 +63,7 @@ def remove_objects(img, lower_size=None, upper_size=None):
         elif (lower_size is None) and (upper_size is not None):
             if sizes[i - 1] < upper_size:
                 _img[labels == i] = 255
-
+    # cv2.imwrite('./images/sample/after.png',_img)     #オブジェクト除去後の画像を確認
     return _img
 
 
@@ -82,41 +84,58 @@ def bgr2binary(img, mask=None):
     """
     牌以外の領域を除外する
     """
-    binary_img = np.ones((img.shape[0], img.shape[1]))
 
+    cv2.imwrite('./images/sample/before_bin1.png', img)
+
+    binary_img = np.ones((img.shape[0], img.shape[1])) #img.shapeの返戻値は(行数,列数,チャンネル数)のタプル。作ったのは入力画像と同じ大きさの要素が1の行列
+    # cv2.imwrite('./images/sample/before_bin2.png', binary_img)
     # 固定マスク
-    if mask is not None:
+    if mask is not None: #マスクが引数に指定されていたら
         img[mask == 0] = 0
         binary_img[mask == 0] = 0
+
+    # cv2.imwrite('./images/sample/before_bin1-1.png', img)
+    # cv2.imwrite('./images/sample/before_bin2-1.png', binary_img)
+
+    # cv2.imwrite('./images/sample/before_binary.png',img) #binary前の画像を確認
 
     # 雀卓の緑
     loc_desk = (img[:, :, 0] > 90) * (img[:, :, 0] < 220) * \
                (img[:, :, 1] > 80) * (img[:, :, 1] < 220) * \
-               (img[:, :, 2] > 40) * (img[:, :, 2] < 120)
+               (img[:, :, 2] > 40) * (img[:, :, 2] < 120)       #バックスラッシュはエスケープシーケンス(改行)
+    #loc_deskは真偽値(1か0) 
+    print(sum(sum(loc_desk)))
+
     # 肌
     loc_skin = (img[:, :, 0] > 60) * (img[:, :, 0] < 180) * \
                (img[:, :, 1] > 60) * (img[:, :, 1] < 180) * \
                (img[:, :, 2] > 190) * (img[:, :, 2] < 256)
+    print(sum(sum(loc_skin))) #0になってる
     # 牌の背中（黄）
     loc_yellow = (img[:, :, 0] > 100) * (img[:, :, 0] < 180) * \
                  (img[:, :, 1] > 170) * (img[:, :, 1] < 256) * \
                  (img[:, :, 2] > 230) * (img[:, :, 2] < 256)
+    print(sum(sum(loc_yellow))) #0になってる
     # 牌の背中（青）
     loc_blue = (img[:, :, 0] > 110) * (img[:, :, 0] < 200) * \
                (img[:, :, 1] > 70) * (img[:, :, 1] < 120) * \
                (img[:, :, 2] > 40) * (img[:, :, 2] < 70)
+    print(sum(sum(loc_blue)))
 
     # 牌の側面
     loc_tile = (img[:, :, 0] > 240) * (img[:, :, 1] > 240) * (img[:, :, 2] > 240)
     # 小領域除去
     loc_tile = remove_objects(loc_tile.astype(np.uint8), lower_size=200, upper_size=None)
     # 牌の側面より右側
+    
     tile_right = np.where(loc_tile)[1].max() + 1  # オフセット
     loc_right = np.zeros_like(binary_img, dtype=np.bool)
     loc_right[:, tile_right:] = True
-
-    # 統合
+       
+    # 統合  
     binary_img[loc_desk + loc_skin + loc_yellow + loc_blue + loc_right] = 0
+    
+    # cv2.imwrite('./images/sample/after_binary.png',binary_img) #加工後の画像を表示
 
     return binary_img
 
@@ -126,12 +145,14 @@ def get_tiles_area(img, mask=None, lower_size=600):
     """
     # 2値化
     binary_img = bgr2binary(np.copy(img), mask)
-
+    # cv2.imwrite('./images/sample/binary.png', binary_img)
     # モルフォロジー変換
     binary_img = morphology(binary_img)
-
+    # cv2.imwrite('./images/sample/binary2.png', binary_img)
     # 小領域除去
     binary_img = remove_objects(binary_img.astype(np.int8), lower_size, upper_size=None)
+   
+    # cv2.imwrite('./images/sample/binary3.png', binary_img) #binary_imgを出力
 
     return binary_img
 
@@ -235,7 +256,7 @@ def get_target_areas(img, tiles_x, tiles_y):
 def get_target_areas_CNN(img, tiles_x, tiles_y):
     """CNN対象の範囲を切り出し
     """
-    w, h = 24, 36
+    w, h = 32, 44
     tiles_num = len(tiles_x)-1
     areas = np.empty((tiles_num, h, w, 3))
     for i in range(tiles_num):

@@ -4,7 +4,7 @@ import cv2
 from common import tile_detection_util as tdu
 
 
-def tile_detection(img, mask, templates, save_name=None, tmp_num_per_tile=3, tile_kind=37):
+def tile_detection(img, mask, templates, save_name=None, tmp_num_per_tile=1, tile_kind=37):
     # 手牌領域抽出
     tiles_area = tdu.get_tiles_area(img, mask)
 
@@ -45,14 +45,18 @@ if __name__ == "__main__":
     dir_path = 'images/template/'
     temp_num_per_tile = 1
     templates = tdu.get_template_list(dir_path, temp_num_per_tile)
+    # print(templates)
+    # for i in range(len(templates)):
+    #     cv2.imread(templates)
 
     # 固定マスク画像
-    mask = cv2.imread('images/mask/mask.png', cv2.IMREAD_GRAYSCALE)
+    mask = cv2.imread('images/mask/mask21.png', cv2.IMREAD_GRAYSCALE)
 
     # 手牌画像
-    img = cv2.imread('images/sample/sample.png')
+    img = cv2.imread("./images/sample/screenshot_res03.png")
+    # img = cv2.imread('images/sample/sample.png')
     tdu.cvimshow(img)
 
     # 手牌検出
-    save_name = 'images/sample/result_template_matching.png'
-    tiles = tile_detection(img, mask, templates, save_name=save_name, tmp_num_per_tile=1, tile_kind=2)
+    save_name = 'images/sample/result_template_matching03.png'
+    tiles = tile_detection(img, mask, templates, save_name=save_name, tmp_num_per_tile=1, tile_kind=37)

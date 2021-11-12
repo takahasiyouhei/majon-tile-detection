@@ -19,9 +19,15 @@ def resize_screenshot(img, save_name=None):
         cv2.imwrite(save_name, img)
 
     return img
+for i in range(43):
+    i += 100
+    path = 'images/sample/test/2021_02_0'+ str(i) +'.png'
+    save_path = 'images/sample/test_data/screenshot_res'+ str(i) +'.png'
+    print(path)
+    if __name__ == "__main__":
 
-if __name__ == "__main__":
-    # 画像の読み込み
-    img = cv2.imread('images/sample/screenshot.png')
-    # リサイズ
-    img = resize_screenshot(img, save_name='images/sample/screenshot_res.png')
+        # 画像の読み込み
+        img = cv2.imread(path)
+
+        # リサイズ
+        img = resize_screenshot(img, save_name=save_path)

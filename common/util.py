@@ -23,8 +23,8 @@ def shuffle_dataset(x, t):
     -------
     x, t : シャッフルを行った訓練データと教師データ
     """
-    permutation = np.random.permutation(x.shape[0])
-    x = x[permutation,:] if x.ndim == 2 else x[permutation,:,:,:]
+    permutation = np.random.permutation(x.shape[0]) 
+    x = x[permutation,:] if x.ndim == 2 else x[permutation,:,:,:] #カラー画像ならばx.ndimは3
     t = t[permutation]
 
     return x, t
@@ -51,7 +51,7 @@ def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
     out_w = (W + 2*pad - filter_w)//stride + 1
 
     img = np.pad(input_data, [(0,0), (0,0), (pad, pad), (pad, pad)], 'constant')
-    col = np.zeros((N, C, filter_h, filter_w, out_h, out_w))
+    col = np.zeros((N, C, filter_h, filter_w, out_h, out_w)) #メモリを確保
 
     for y in range(filter_h):
         y_max = y + stride*out_h
@@ -67,7 +67,7 @@ def col2im(col, input_shape, filter_h, filter_w, stride=1, pad=0):
     """
     Parameters
     ----------
-    col :
+    col : 2次元配列
     input_shape : 入力データの形状（例：(10, 1, 28, 28)）
     filter_h :
     filter_w

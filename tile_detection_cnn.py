@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cv2
 from common import tile_detection_util as tdu
 from CNN.SimpleConvNet import SimpleConvNet2
+import sys
 
 
 def tile_detection_CNN(img, mask, cnn, save_name=None, tmp_num_per_tile=3, tile_kind=37):
@@ -40,10 +41,10 @@ def tile_detection_CNN(img, mask, cnn, save_name=None, tmp_num_per_tile=3, tile_
 
 if __name__ == "__main__":
     # 固定マスク画像
-    mask = cv2.imread('images/mask/mask.png', cv2.IMREAD_GRAYSCALE)
+    mask = cv2.imread('images/mask/mask21.png', cv2.IMREAD_GRAYSCALE)
 
     # 手牌画像
-    img2 = cv2.imread('images/sample/sample.png')
+    img2 = cv2.imread("images/sample/resize.png")
     tdu.cvimshow(img2)
 
     # CNN
@@ -53,4 +54,4 @@ if __name__ == "__main__":
     cnn.load_params("CNN/params.pkl")
 
     # 手牌検出
-    tiles = tile_detection_CNN(img2, mask, cnn, save_name='images/sample/result_cnn.png')
+    tiles = tile_detection_CNN(img2, mask, cnn, save_name='images/sample/result_cnn03.png')
